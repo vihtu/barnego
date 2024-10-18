@@ -69,8 +69,8 @@ def login():
     if request.method == 'POST':
         password = request.form.get('password')
         # Altere a senha para a que você deseja
-        if password == '12345':  # Altere isso para a senha desejada
-            session['logged_in'] = True  # Altere 'teste' para 'logged_in'
+        if password == 'trap333':  # Altere isso para a senha desejada
+            session['barnego'] = True  # Altere 'teste' para 'logged_in'
             return redirect(url_for('index'))
         else:
             return render_template('login.html', error='Usuário ou senha incorretos.')  # Mensagem de erro
