@@ -1,11 +1,22 @@
 import pandas as pd
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for, session
+from functools import wraps
 import os
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta'  # Altere isso para uma chave mais segura
 
 # Nome do arquivo Excel para armazenar 
 excel_file_path = 'pedidos.xlsx'
+
+# Função para exigir autenticação
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def index():
@@ -52,6 +63,30 @@ def generate_order():
     updated_df.to_excel(excel_file_path, index=False)
 
     return jsonify({"message": "Pedido gerado com sucesso!", "file": excel_file_path})
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        # Altere a senha para a que você deseja
+        if password == '12345':  # Altere isso para a senha desejada
+            session['teste'] = True
+            return redirect(url_for('index'))
+    return render_template('login.html')  # Página de login
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('index'))
+
+# Rota para download do arquivo Excel
+@app.route('/download_excel')
+@login_required
+def download_excel():
+    try:
+        return send_file(excel_file_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Obtém a porta do ambiente do Render ou usa a porta 5000 por padrão
