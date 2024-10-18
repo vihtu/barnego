@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# Caminho do arquivo Excel para armazenar pedidos
+# Nome do arquivo Excel para armazenar 
 excel_file_path = 'pedidos.xlsx'
 
 @app.route('/')
@@ -21,7 +21,7 @@ def generate_order():
     cart_data = request.json.get('cart', [])
     total_value = request.json.get('total', 0)
 
-    # Criar uma lista com os dados dos produtos do carrinho
+    # Criar um DataFrame com os produtos
     products_list = []
     for item in cart_data:
         products_list.append({
@@ -31,25 +31,21 @@ def generate_order():
             'Total': item['price'] * item['qtd']
         })
 
-    # Criar um DataFrame com os produtos
+    # Criar um DataFrame
     df = pd.DataFrame(products_list)
 
-    # Adicionar uma linha para o valor total
-    total_row = pd.DataFrame({
-        'Nome': ['Total'], 
-        'Quantidade': [''], 
-        'Preço Unitário': [''], 
-        'Total': [total_value]
-    })
+    # Adicionar uma linha para o total
+    total_row = pd.DataFrame({'Nome': ['Total'], 'Quantidade': [''], 'Preço Unitário': [''], 'Total': [total_value]})
     df = pd.concat([df, total_row], ignore_index=True)
 
     # Verificar se o arquivo já existe
     if os.path.exists(excel_file_path):
-        # Carregar o DataFrame existente e concatenar com o novo
+        # Se existir, carregar o DataFrame existente
         existing_df = pd.read_excel(excel_file_path)
+        # Concatenar com o novo DataFrame
         updated_df = pd.concat([existing_df, df], ignore_index=True)
     else:
-        # Se o arquivo não existir, usar o novo DataFrame diretamente
+        # Se não existir, usar apenas o novo DataFrame
         updated_df = df
 
     # Salvar o DataFrame atualizado no arquivo Excel
@@ -58,4 +54,7 @@ def generate_order():
     return jsonify({"message": "Pedido gerado com sucesso!", "file": excel_file_path})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Obtém a porta do ambiente do Render ou usa a porta 5000 por padrão
+    port = int(os.environ.get("PORT", 5000))
+    # Faz o app rodar no host 0.0.0.0 e na porta especificada
+    app.run(host="0.0.0.0", port=port, debug=True)
