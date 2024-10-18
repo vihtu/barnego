@@ -70,8 +70,11 @@ def login():
         password = request.form.get('password')
         # Altere a senha para a que você deseja
         if password == '12345':  # Altere isso para a senha desejada
-            session['teste'] = True
+            session['logged_in'] = True  # Altere 'teste' para 'logged_in'
             return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error='Usuário ou senha incorretos.')  # Mensagem de erro
+
     return render_template('login.html')  # Página de login
 
 @app.route('/logout')
