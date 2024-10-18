@@ -71,7 +71,7 @@ def login():
         # Altere a senha para a que você deseja
         if password == 'trap333':  # Altere isso para a senha desejada
             session['logged_in'] = True  # Altere 'teste' para 'logged_in'
-            return redirect(url_for('index'))
+            return redirect(url_for('download_excel'))  # Redireciona para download imediatamente
         else:
             return render_template('login.html', error='Usuário ou senha incorretos.')  # Mensagem de erro
 
