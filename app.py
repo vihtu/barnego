@@ -4,7 +4,7 @@ from functools import wraps
 import os
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta'  # Altere isso para uma chave mais segura
+app.secret_key = os.getenv('APP_SECRET_KEY', 'valor_default')  # Chave secreta para sessão, altere conforme necessário
 
 # Nome do arquivo Excel para armazenar 
 excel_file_path = 'pedidos.xlsx'
@@ -67,10 +67,11 @@ def generate_order():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        username = request.form.get('username')
         password = request.form.get('password')
-        # Altere a senha para a que você deseja
-        if password == 'trap333':  # Altere isso para a senha desejada
-            session['logged_in'] = True  # Altere 'teste' para 'logged_in'
+        # Verifica as credenciais usando variáveis de ambiente
+        if username == os.getenv('APP_USERNAME') and password == os.getenv('APP_PASSWORD'):
+            session['logged_in'] = True
             return redirect(url_for('download_excel'))  # Redireciona para download imediatamente
         else:
             return render_template('login.html', error='Usuário ou senha incorretos.')  # Mensagem de erro
@@ -92,7 +93,5 @@ def download_excel():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Obtém a porta do ambiente do Render ou usa a porta 5000 por padrão
     port = int(os.environ.get("PORT", 5000))
-    # Faz o app rodar no host 0.0.0.0 e na porta especificada
     app.run(host="0.0.0.0", port=port, debug=True)
