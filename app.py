@@ -4,12 +4,12 @@ import os
 
 app = Flask(__name__)
 
-# Nome do arquivo Excel para armazenar 
+# Caminho do arquivo Excel para armazenar pedidos
 excel_file_path = 'pedidos.xlsx'
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # Página ini
+    return render_template('index.html')  # Página inicial
 
 @app.route('/cart')
 def cart():
@@ -21,7 +21,7 @@ def generate_order():
     cart_data = request.json.get('cart', [])
     total_value = request.json.get('total', 0)
 
-    # Criar um DataFrame com os produtos
+    # Criar uma lista com os dados dos produtos do carrinho
     products_list = []
     for item in cart_data:
         products_list.append({
@@ -31,21 +31,25 @@ def generate_order():
             'Total': item['price'] * item['qtd']
         })
 
-    # Criar um DataFrame
+    # Criar um DataFrame com os produtos
     df = pd.DataFrame(products_list)
 
-    # Adicionar uma linha para o total
-    total_row = pd.DataFrame({'Nome': ['Total'], 'Quantidade': [''], 'Preço Unitário': [''], 'Total': [total_value]})
+    # Adicionar uma linha para o valor total
+    total_row = pd.DataFrame({
+        'Nome': ['Total'], 
+        'Quantidade': [''], 
+        'Preço Unitário': [''], 
+        'Total': [total_value]
+    })
     df = pd.concat([df, total_row], ignore_index=True)
 
     # Verificar se o arquivo já existe
     if os.path.exists(excel_file_path):
-        # Se existir, carregar o DataFrame existente
+        # Carregar o DataFrame existente e concatenar com o novo
         existing_df = pd.read_excel(excel_file_path)
-        # Concatenar com o novo DataFrame
         updated_df = pd.concat([existing_df, df], ignore_index=True)
     else:
-        # Se não existir, usar apenas o novo DataFrame
+        # Se o arquivo não existir, usar o novo DataFrame diretamente
         updated_df = df
 
     # Salvar o DataFrame atualizado no arquivo Excel
